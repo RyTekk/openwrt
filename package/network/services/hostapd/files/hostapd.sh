@@ -219,7 +219,7 @@ hostapd_set_bss_options() {
 	set_default maxassoc 0
 	set_default max_inactivity 0
 	set_default short_preamble 1
-	set_default disassoc_low_ack 1
+	set_default disassoc_low_ack 0
 	set_default hidden 0
 	set_default wmm 1
 	set_default uapsd 1
@@ -227,6 +227,9 @@ hostapd_set_bss_options() {
 	set_default tdls_prohibit 0
 	set_default eapol_version 0
 	set_default acct_port 1813
+	set_default wpa_group_rekey 0
+	set_default wpa_pair_rekey 0
+	set_default wpa_master_rekey 0
 
 	append bss_conf "ctrl_interface=/var/run/hostapd"
 	if [ "$isolate" -gt 0 ]; then
@@ -240,18 +243,15 @@ hostapd_set_bss_options() {
 	fi
 
 	append bss_conf "disassoc_low_ack=$disassoc_low_ack" "$N"
+	append bss_conf "wpa_group_rekey=$wpa_group_rekey" "$N"
+	append bss_conf "wpa_ptk_rekey=$wpa_pair_rekey"    "$N"
+	append bss_conf "wpa_gmk_rekey=$wpa_master_rekey"  "$N"
 	append bss_conf "preamble=$short_preamble" "$N"
 	append bss_conf "wmm_enabled=$wmm" "$N"
 	append bss_conf "ignore_broadcast_ssid=$hidden" "$N"
 	append bss_conf "uapsd_advertisement_enabled=$uapsd" "$N"
 
 	[ "$tdls_prohibit" -gt 0 ] && append bss_conf "tdls_prohibit=$tdls_prohibit" "$N"
-
-	[ "$wpa" -gt 0 ] && {
-		[ -n "$wpa_group_rekey"  ] && append bss_conf "wpa_group_rekey=$wpa_group_rekey" "$N"
-		[ -n "$wpa_pair_rekey"   ] && append bss_conf "wpa_ptk_rekey=$wpa_pair_rekey"    "$N"
-		[ -n "$wpa_master_rekey" ] && append bss_conf "wpa_gmk_rekey=$wpa_master_rekey"  "$N"
-	}
 
 	[ -n "$nasid" ] && append bss_conf "nas_identifier=$nasid" "$N"
 	[ -n "$acct_server" ] && {
@@ -330,8 +330,9 @@ hostapd_set_bss_options() {
 			local wep_keyidx=0
 			json_get_vars key
 			hostapd_append_wep_key bss_conf
+			set_default wep_rekey 0
 			append bss_conf "wep_default_key=$wep_keyidx" "$N"
-			[ -n "$wep_rekey" ] && append bss_conf "wep_rekey_period=$wep_rekey" "$N"
+			append bss_conf "wep_rekey_period=$wep_rekey" "$N"
 		;;
 	esac
 
